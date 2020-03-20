@@ -10,7 +10,17 @@ All functions developed for `VimbaPython` have only been tested with version 0.3
 
 ### Installation
 
-To install the package, simple clone this repository and run the following:
+To install the package, simply clone this repository to a suitable directory
+
+``` shell
+# Clone to desktop (for e.g.)
+
+cd ~/Desktop
+
+git clone https://github.com/EmbryoPhenomics/vimbaPy.git
+
+```
+and run the following:
 
 ``` shell
 
@@ -18,7 +28,7 @@ cd path/to/vimbaPy
 
 ```
 
-and then install using pip:
+Then install using pip:
 
 ``` shell
 # Uninstall any existing version of vimbaPy
