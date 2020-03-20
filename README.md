@@ -14,7 +14,6 @@ To install the package, simply clone this repository to a suitable directory
 
 ``` shell
 # Clone to desktop (for e.g.)
-
 cd ~/Desktop
 
 git clone https://github.com/EmbryoPhenomics/vimbaPy.git
