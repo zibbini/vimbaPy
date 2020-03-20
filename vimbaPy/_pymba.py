@@ -1,11 +1,8 @@
-from pymba import Vimba, VimbaException
 import pymba
-from typing import Optional
+from pymba import Vimba, VimbaException
 from pymba import Frame
+from typing import Optional
 from time import sleep
-# from features import getCameraID
-import os.path
-import os
 import datetime
 import cv2
 
