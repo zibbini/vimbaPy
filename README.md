@@ -19,17 +19,12 @@ cd ~/Desktop
 git clone https://github.com/EmbryoPhenomics/vimbaPy.git
 
 ```
-and run the following:
+and then install using pip:
 
 ``` shell
 
-cd path/to/vimbaPy
+cd vimbaPy
 
-```
-
-Then install using pip:
-
-``` shell
 # Uninstall any existing version of vimbaPy
 pip uninstall vimbaPy 
 
@@ -53,6 +48,11 @@ If you'd like to install `vimbaPy` for a specific python version, use the follow
 sudo -H python3.8 -m pip install .
 
 ```
+#### Known installation errors
+
+Doing a normal pip installation may not work and so you may need to install `vimbaPy` for the version of python you intend to use (please see above). 
+
+#### Installing pymba and VimbaPython
 
 Please see the installation guide for installing VimbaPython [here](https://github.com/alliedvision/VimbaPython). You can install `pymba` using pip:
 
@@ -71,10 +71,6 @@ sudo pip install pymba
 ```
 
 For installing vimba please see the installation guides for your OS [here](https://www.alliedvision.com/en/products/software.html#c6444).
-
-#### Known installation errors
-
-Doing a normal pip installation may not work and so you may need to install `vimbaPy` for the version of python you intend to use (please see above). 
 
 
 ### Example usage
