@@ -190,8 +190,7 @@ def acquire_frame_raw(cameraID, path, timeout_ms: int = 2000):
 			return image
 
 # ======================================================= #
-# Acquire a stream of images and export, methods for raw and
-	# video acquisition
+# Acquire a stream of images and export
 # ======================================================= #
 def acquire_stream(cameraID, frame_buffer, time, path):
 
