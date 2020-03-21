@@ -41,8 +41,12 @@ Retrieve all the features of a given camera. Note not all features will be mutab
 
 from vimbaPy import _VimbaPython
 
+# Use the first camera
+cams = _VimbaPython.getCameraID()
+cam = cams[0]
+
 # Print all the features for the default camera device (usually your webcam)
-featureList = _VimbaPython.listFeatures(cameraID=0)
+featureList = _VimbaPython.listFeatures(cameraID=cam)
 print(featureList)
 
 ```
@@ -62,8 +66,12 @@ Retrieve the current value of a specified feature for a given camera.
 
 from vimbaPy import _VimbaPython
 
+# Use the first camera
+cams = _VimbaPython.getCameraID()
+cam = cams[0]
+
 # Retrieve feature info for the default camera device
-exposure = _VimbaPython.getFeatureRanges(cameraID=0, name='ExposureTime')
+exposure = _VimbaPython.getFeatureRanges(cameraID=cam, name='ExposureTime')
 
 # Print current value
 print(exposure)
@@ -85,8 +93,12 @@ Retrieve the range of values available for a given numeric feature. Note that th
 
 from vimbaPy import _VimbaPython
 
+# Use the first camera
+cams = _VimbaPython.getCameraID()
+cam = cams[0]
+
 # Retrieve detailed feature info for exposure for the default camera device
-exposureInfo = _VimbaPython.getFeatureInfo(cameraID=0, name='ExposureTime')
+exposureInfo = _VimbaPython.getFeatureInfo(cameraID=cam, name='ExposureTime')
 
 print(exposureInfo)
 
@@ -116,8 +128,12 @@ Generic function for setting a feature to a new value.
 
 from vimbaPy import _VimbaPython
 
+# Use the first camera
+cams = _VimbaPython.getCameraID()
+cam = cams[0]
+
 # Set the acquisition mode to SingleFrame for the default camera device
-_VimbaPython.setFeatureValue(cameraID=0, feature='AcquisitionMode', value='SingleFrame', verboes=True)
+_VimbaPython.setFeatureValue(cameraID=cam, feature='AcquisitionMode', value='SingleFrame', verboes=True)
 
 ```
 
@@ -146,8 +162,12 @@ Acquire an individual frame from a given camera and export the image as a JPEG f
 
 from vimbaPy import _VimbaPython
 
+# Use the first camera
+cams = _VimbaPython.getCameraID()
+cam = cams[0]
+
 # Capture a single frame from the default camera device and export to desired path
-_VimbaPython.acquire_frame(cameraID=0, path = 'path/to/files')
+_VimbaPython.acquire_frame(cameraID=cam, path = 'path/to/files')
 
 ```
 
@@ -166,8 +186,12 @@ Acquire an individual frame from a given camera and return the raw image data as
 
 from vimbaPy import _VimbaPython
 
+# Use the first camera
+cams = _VimbaPython.getCameraID()
+cam = cams[0]
+
 # Capture a single frame from the default camera device 
-image_dat = _VimbaPython.acquire_frame_raw(cameraID=0)
+image_dat = _VimbaPython.acquire_frame_raw(cameraID=cam)
 
 ```
 
@@ -186,10 +210,12 @@ Acquire an individual frame from a given camera and write the image to a tempora
 ``` R
 # Example usage in R
 library(reticulate)
-source_python("/path/to/acquire.py")
+source_python("/path/to/_VimbaPython.py")
+
+cam <- getCameraID()
 
 # Capture a single frame from the default camera device and export to temporary file
-acquire_frame_temp(cameraID=0, filename=tempfile())
+acquire_frame_temp(cameraID=cam, filename=tempfile())
 
 ```
 
@@ -210,8 +236,12 @@ Acquire a stream of frames and export to a given path as individual JPEG files.
 
 from vimbaPy import _VimbaPython
 
+# Use the first camera
+cams = _VimbaPython.getCameraID()
+cam = cams[0]
+
 # Stream and export frames from the default camera device for 5 seconds
-_VimbaPython.acquire_stream(cameraID=0, buffer=10, time=5, path='path/to/files')
+_VimbaPython.acquire_stream(cameraID=cam, buffer=10, time=5, path='path/to/files')
 
 ```
 
