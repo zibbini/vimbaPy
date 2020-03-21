@@ -271,21 +271,23 @@ def acquire_frame_temp(cameraID, filename):
 # ======================================================= #
 def acquire_stream(cameraID, time, path):
 
+	pixelFormatConversions = {
+    		'BayerRG8': cv2.COLOR_BAYER_RG2RGB,
+	}
+
 	def export_stream(frame: Frame) -> None:
-		# print('frame {}'.format(frame.data.frameID))
 
 		image = frame.buffer_data_numpy()
 
-		# # Colour space conversion, perhaps not required
-		# try:
-		# 	image = cv2.cvtColor(image, PIXEL_FORMATS_CONVERSIONS[frame.pixel_format])
-		# except KeyError:
-		# 	pass
+		# Colour space conversion, perhaps not required
+		try:
+			image = cv2.cvtColor(image, pixelFormatConversions[frame.pixel_format])
+		except:
+		 	pass
 
 		timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
 		filename = str(timestamp) + ".jpg"
 
-		# write image to disk
 		cv2.imwrite(path + filename, image)
 
 
