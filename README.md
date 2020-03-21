@@ -48,6 +48,9 @@ If you'd like to install `vimbaPy` for a specific python version, use the follow
 sudo -H python3.8 -m pip install .
 
 ```
+
+For installing the pymba or VimbaPython module specifically, see the corresponding branches for further installation information. 
+
 #### Known installation errors
 
 Doing a normal pip installation may not work and so you may need to install `vimbaPy` for the version of python you intend to use (please see above). 
