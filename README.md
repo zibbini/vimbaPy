@@ -1,14 +1,14 @@
-## vimbaPy
+# vimbaPy
 
 `vimbaPy` is a python package containing helper/convenience functions for interfacing with the two main python wrappers for the Vimba C API: `pymba` and `VimbaPython`. Differences in the implementations of either wrapper can mean that functions written in one may work better for your particular workflow, and so a combination of both wrappers may provide the most complete solution. As such, both have been included here to allow users to easily experiment with either wrapper through a simple declarative interface.
 
 So far only USB cameras have been tested (specifically: monochrome Alvium 1800 u-500m), however all functions described in this package do not address a specific camera type so in theory should work with GigE cameras. Documentation for each sub-package can be found in the [`/docs`](https://github.com/zibbini/misc_embryoPhenomics/tree/master/python/vimbaPy/release/docs) folder. Example use cases of the package itself can be found below.
 
-#### Important note
+### Important note
 
 All functions developed for `VimbaPython` have only been tested with version 0.3.1. There is no guarantee that these functions will work for future versions of VimbaPython.
 
-### Installation
+## Installation
 
 To install the package, simply clone this repository to a suitable directory
 
@@ -48,15 +48,15 @@ If you'd like to install `vimbaPy` for a specific python version, use the follow
 sudo -H python3.8 -m pip install .
 
 ```
-##### Installing a specific module
+### Installing a specific module
 
 For installing the pymba or VimbaPython module specifically, see the corresponding branches for further installation information. 
 
-#### Known installation errors
+### Known installation errors
 
 Doing a normal pip installation may not work and so you may need to install `vimbaPy` for the version of python you intend to use (please see above). 
 
-#### Installing pymba and VimbaPython
+### Installing pymba and VimbaPython
 
 Please see the installation guide for installing VimbaPython [here](https://github.com/alliedvision/VimbaPython). You can install `pymba` using pip:
 
@@ -77,7 +77,7 @@ sudo pip install pymba
 For installing vimba please see the installation guides for your OS [here](https://www.alliedvision.com/en/products/software.html#c6444).
 
 
-### Example usage
+## Example usage
 
 All code below can be found in the `test.py` script above.
 
