@@ -45,7 +45,7 @@ from vimbaPy import _VimbaPython
 cams = _VimbaPython.getCameraID()
 cam = cams[0]
 
-# Print all the features for the default camera device (usually your webcam)
+# Print all the features for the selected camera
 featureList = _VimbaPython.listFeatures(cameraID=cam)
 print(featureList)
 
@@ -70,10 +70,9 @@ from vimbaPy import _VimbaPython
 cams = _VimbaPython.getCameraID()
 cam = cams[0]
 
-# Retrieve feature info for the default camera device
-exposure = _VimbaPython.getFeatureRanges(cameraID=cam, name='ExposureTime')
+# Retrieve feature info for the selected camera
+exposure = _VimbaPython.getCurrentFeatureValue(cameraID=cam, name='ExposureTime')
 
-# Print current value
 print(exposure)
 
 ```
@@ -97,8 +96,8 @@ from vimbaPy import _VimbaPython
 cams = _VimbaPython.getCameraID()
 cam = cams[0]
 
-# Retrieve detailed feature info for exposure for the default camera device
-exposureInfo = _VimbaPython.getFeatureInfo(cameraID=cam, name='ExposureTime')
+# Retrieve detailed feature info for exposure for the selected camera
+exposureInfo = _VimbaPython.getFeatureRange(cameraID=cam, name='ExposureTime')
 
 print(exposureInfo)
 
@@ -132,7 +131,7 @@ from vimbaPy import _VimbaPython
 cams = _VimbaPython.getCameraID()
 cam = cams[0]
 
-# Set the acquisition mode to SingleFrame for the default camera device
+# Set the acquisition mode to SingleFrame for the selected camera
 _VimbaPython.setFeatureValue(cameraID=cam, feature='AcquisitionMode', value='SingleFrame', verboes=True)
 
 ```
@@ -166,7 +165,7 @@ from vimbaPy import _VimbaPython
 cams = _VimbaPython.getCameraID()
 cam = cams[0]
 
-# Capture a single frame from the default camera device and export to desired path
+# Capture a single frame from the selected camera and export to desired path
 _VimbaPython.acquire_frame(cameraID=cam, path = 'path/to/files')
 
 ```
@@ -190,7 +189,7 @@ from vimbaPy import _VimbaPython
 cams = _VimbaPython.getCameraID()
 cam = cams[0]
 
-# Capture a single frame from the default camera device 
+# Capture a single frame from the selected camera
 image_dat = _VimbaPython.acquire_frame_raw(cameraID=cam)
 
 ```
@@ -214,7 +213,7 @@ source_python("/path/to/_VimbaPython.py")
 
 cam <- getCameraID()
 
-# Capture a single frame from the default camera device and export to temporary file
+# Capture a single frame from the selected camera and export to temporary file
 acquire_frame_temp(cameraID=cam, filename=tempfile())
 
 ```
@@ -240,7 +239,7 @@ from vimbaPy import _VimbaPython
 cams = _VimbaPython.getCameraID()
 cam = cams[0]
 
-# Stream and export frames from the default camera device for 5 seconds
+# Stream and export frames from the selected camera for 5 seconds
 _VimbaPython.acquire_stream(cameraID=cam, buffer=10, time=5, path='path/to/files')
 
 ```
