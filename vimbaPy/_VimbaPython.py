@@ -177,7 +177,7 @@ def acquire_frame_temp(cameraID, filename, timeout_ms: int = 2000):
 # ======================================================= #
 # Acquire a frame from a given camera and return raw data
 # ======================================================= #
-def acquire_frame_raw(cameraID, path, timeout_ms: int = 2000):
+def acquire_frame_raw(cameraID, timeout_ms: int = 2000):
 
 	with Vimba.get_instance() as vimba:
 		with vimba.get_camera_by_id(cameraID) as cam:
