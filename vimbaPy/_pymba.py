@@ -108,7 +108,7 @@ def setFeatureValue(cameraID, feature, value, verbose=False):
 			initial = feature.value
 			feature.value = value
 
-			print(feature + " is now: " + str(value) + ", was " + str(initial))
+			print(str(feature) + " is now: " + str(value) + ", was " + str(initial))
 
 		elif verbose == False:
 			feature = camera.feature(feature)
