@@ -277,7 +277,7 @@ def acquire_stream(cameraID, time, buffer_size, path):
 
 	def export_stream(frame: Frame) -> None:
 
-		if frame.data.receiveStaus == -1:
+		if frame.data.receiveStatus == -1:
 			pass
 		else:
 			image = frame.buffer_data_numpy()
