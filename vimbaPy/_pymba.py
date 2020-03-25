@@ -277,10 +277,11 @@ def acquire_stream(cameraID, time, buffer_size, path):
 
 	def export_stream(frame: Frame) -> None:
 
-		if frame.data.receiveStatus == -1:
-			pass
-		else:
+		# Ignore incomplete frames
+		if frame.data.receiveStatus == 0:
 			image = frame.buffer_data_numpy()
+		elif frame.data.receiveStatus == -1:
+			return
 
 		# Colour space conversion, perhaps not required
 		try:
