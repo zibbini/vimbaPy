@@ -198,9 +198,9 @@ def acquire_stream(cameraID, frame_buffer, time, path):
 
 	    if frame.get_status() == FrameStatus.Complete:
 
-			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
-			filename = path + str(timestamp) + ".jpg"
-			cv2.imwrite(filename, frame.as_opencv_image())
+	    	timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+	    	filename = path + str(timestamp) + ".jpg"
+	    	cv2.imwrite(filename, frame.as_opencv_image())
 
 	    cam.queue_frame(frame)
 
