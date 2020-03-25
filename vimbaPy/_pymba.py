@@ -301,6 +301,9 @@ def acquire_stream(cameraID, time, path):
 		sleep(time)
 
 		camera.stop_frame_acquisition()
-		camera.disarm()
 
+		# Required to stop the session crashing
+		sleep(3)
+
+		camera.disarm()
 		camera.close()
