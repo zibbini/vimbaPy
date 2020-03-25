@@ -269,7 +269,7 @@ def acquire_frame_temp(cameraID, filename):
 # Acquire a stream of images for a given length of time
 	# and export to a path 
 # ======================================================= #
-def acquire_stream(cameraID, time, path):
+def acquire_stream(cameraID, time, buffer_size, path):
 
 	pixelFormatConversions = {
     		'BayerRG8': cv2.COLOR_BAYER_RG2RGB,
@@ -277,7 +277,10 @@ def acquire_stream(cameraID, time, path):
 
 	def export_stream(frame: Frame) -> None:
 
-		image = frame.buffer_data_numpy()
+		if frame.data.receiveStaus == -1:
+			pass
+		else:
+			image = frame.buffer_data_numpy()
 
 		# Colour space conversion, perhaps not required
 		try:
@@ -295,7 +298,7 @@ def acquire_stream(cameraID, time, path):
 		camera = vimba.camera(cameraID)
 		camera.open()
 
-		camera.arm('Continuous', export_stream)
+		camera.arm('Continuous', export_stream, frame_buffer_size=buffer_size)
 		camera.start_frame_acquisition()
 
 		sleep(time)
