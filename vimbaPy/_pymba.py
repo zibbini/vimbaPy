@@ -1,31 +1,67 @@
-import pymba
-from pymba import Vimba, VimbaException
-from pymba import Frame
-from typing import Optional
+from pymba import Vimba, VimbaException, Frame
 from time import sleep
-import datetime
+import os
 import cv2
+import datetime
 
-# ======================================================= #
-# Obtain all ID's of connected Allied vision cameras
-	# Note only tested on usb-connected cameras
-	# For other camera types, use lsusb via commandline for listing connected devices (linux only)
-# ======================================================= #
+
 def getCameraID():
+
+	"""
+	Obtain the ID's of all connected Allied Vision cameras. 
+
+	"""
 
 	with Vimba() as vimba:
 			cameras = vimba.camera_ids()
 
 	return cameras
 
-# ======================================================= #
-# List all the features of a given camera
-	# Note not all features will be adjustable
-# ======================================================= #
-def listFeatures(cameraID):
+class createInstance:
 
-	with Vimba() as vimba:
-			camera = vimba.camera(cameraID)
+	"""
+	Create an independent instance for operating a given camera.
+
+	Arguments:
+		- cameraID: Character string. Camera ID for a specific camera. 
+		- liveViewWidth: Numeric. Width of live camera view in pixels. Default is 520 px. 
+		- liveViewHeight: Numeric. Height of live camera view in pixels. Default is 400 px.
+		- path: Character string. Path to save frames. Default is current working directory.
+
+	"""
+
+	def __init__(self, cameraID, liveViewWidth=520, liveViewHeight=400, path=os.getcwd()):
+
+		self.cameraID = cameraID
+		self.pixelFormatConversions = {'BayerRG8': cv2.COLOR_BAYER_RG2RGB}
+		self.liveViewWidth = liveViewWidth
+		self.liveViewHeight = liveViewHeight
+		self.path = path
+
+	def setPath(self, path):
+
+		"""
+		Set a new path for saving frames.
+
+		Arguments:
+			- path: Character string. File path for saving frames. 
+
+		"""
+
+		self.path = path
+
+	def listFeatures(self):
+
+		"""
+		List all features for the given camera. 
+
+			Note that not all features will be adjustable. 
+
+		"""
+
+		with Vimba() as vimba:
+
+			camera = vimba.camera(self.cameraID)
 			camera.open()
 
 			features = []
@@ -35,279 +71,220 @@ def listFeatures(cameraID):
 
 			camera.close()
 
-	return features
+		return features
 
-# ======================================================= #
-# Obtain basic information for a specific feature for a given camera
-	# For more detailed information see the method below
-# ======================================================= #
-def getFeatureRanges(cameraID, name):
+	def getFeatureInfo(self, feature):
 
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
+		"""
+		Retrieve some basic feature information for a given feature.
 
-		feature = camera.feature(name)
+		Values are returned as a nested list, with the first slot being the 
+		current value, and the second being the range. Min and max are the 
+		first and second slots respectively for the latter.
 
-		try:
-			value = feature.value
-			range_ = feature.range
-		except VimbaException as e:
-			value = e
-			range_ = None
+		Arguments:
+			- feature: Character string. Name of feature to retrieve info from.
 
-		# print('\n\t'.join(
-		# 	str(x) for x in (
-		# 		name,
-		# 		'value : {}'.format(value),
-		# 		'range: {}'.format(range_))
-		# 	if x is not None))
+		"""
 
-		feature_info = [value, range_]
+		with Vimba() as vimba:
+			camera = vimba.camera(self.cameraID)
+			camera.open()
 
-		camera.close()
-
-	return feature_info
-
-# ======================================================= #
-# Obtain detailed information for a specific feature of a given camera
-	# Note that the output is a raw string and will need some parsing to be readable
-# ======================================================= #
-def getFeatureInfo(cameraID, name):
-
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
-
-		feature = camera.feature(name)
-		featureInfo = feature.info
-
-		camera.close()
-
-	return featureInfo
-
-
-# ======================================================= #
-# Several functions for altering the default settings. 
-	# Note that the ranges of some features may co-vary 
-	# with other settings. 
-# ======================================================= #
-
-# ======================================================= #
-# Generic function suited to any feature type 
-# ======================================================= #
-
-def setFeatureValue(cameraID, feature, value, verbose=False):
-
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
-
-		if verbose == True:
 			feature = camera.feature(feature)
-			initial = feature.value
-			feature.value = value
 
-			print(str(feature) + " is now: " + str(value) + ", was " + str(initial))
+			try:
+				value = feature.value
+				range_ = feature.range
+			except VimbaException as e:
+				value = e
+				range_ = None
 
-		elif verbose == False:
-			feature = camera.feature(feature)
-			feature.value = value
+			feature_info = [value, range_]
 
-		camera.close()
+			camera.close()
 
-# ======================================================= #
-# Convenience functions for specific features
-# ======================================================= #
+		return feature_info
 
-def setExposure(cameraID, value, verbose=False):
+	def setFeatureValue(self, feature, value, verbose=False):
 
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
+		"""
+		Set the value for a given feature.
 
-		if verbose == True:
-			feature = camera.feature("ExposureTime")
-			initial = feature.value
+		Arguments:
+			- feature: Character string. Name of feature to set value for.
+			- value: Numeric or character string. New value to set feature to.
+			- verbose: Boolean. Whether to print additional information. Default is False.
 
-			feature.value = value
+		"""
 
-			print("Exposure has been changed from " + str(initial) + " to " + str(value))
+		with Vimba() as vimba:
+			camera = vimba.camera(self.cameraID)
+			camera.open()
 
-		elif verbose == False:
-			feature = camera.feature("ExposureTime")
-			feature.value = value
+			if verbose == True:
+				feature = camera.feature(feature)
+				initial = feature.value
+				feature.value = value
 
-		camera.close()
+				print(str(feature) + " is now: " + str(value) + ", was " + str(initial))
 
+			elif verbose == False:
+				feature = camera.feature(feature)
+				feature.value = value
 
-def setFrameRate(cameraID, value, verbose=False):
+			camera.close()
 
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
+	def incompleteFrameErrorMsg(self):
 
-		if verbose == True:
-			feature = camera.feature("AcquisitionFrameRate")
-			initial = feature.value
-			feature.value = value
+		"""
+		Helper function for printing a basic error message if a frame is incomplete.
 
-			print("Frame-rate has been changed from " + str(initial) + " to " + str(value))
+		"""
 
-		elif verbose == False:
-			feature = camera.feature("AcquisitionFrameRate")
-			feature.value = value
+		print("Acquisition at " + str(self.cameraID) + " returned incomplete frame(s).")
 
-		camera.close()
+	def acquire_frame(self, path=None, filename=None, returnFilename=False):
 
+		"""
+		Acquire a frame and export to a given path.
 
-def setAcquisitionMode(cameraID, value, verbose=False):
+		The path argument is optional for users who would like to export to a specific path.
+		If left empty, the frame will be exported to the path specified in the given instance.
+		This will be the current working directory if you did not specify path when creating the instance
+		or set a new path with .setPath().
 
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
+		Arguments:
+			- path: Character string. File path to save frames. Default is None.
+			- filename: Character string. Filename to save frame by. Default is the current time if left as None.
+			- returnFilename: Boolean. Whether to return the full file-path to the saved frame. Default is False.
 
-		if verbose == True:
-			feature = camera.feature("AcquisitionMode")
-			initial = feature.value
-			feature.value = value
+		"""
 
-			print("Acquisition mode has been changed from " + str(initial) + " to " + str(value))
+		if path == None:
+			path = self.path
 
-		elif verbose == False:
-			feature = camera.feature("AcquisitionMode")
-			feature.value = value
+		with Vimba() as vimba:
+			camera = vimba.camera(self.cameraID)
+			camera.open()
 
-		camera.close()
+			camera.arm(mode="SingleFrame")
 
+			frame = camera.acquire_frame()
+					
+			if not frame.data.receiveStatus == -1:
 
-# ======================================================= #
-# Export a single frame as a pandas csv to a folder (path)
-	# Redundant with updated functions but will keep for 
-	# future uses of callbacks
-# ======================================================= #
-def export_frame(frame, path):
+				image = frame.buffer_data_numpy()
 
-	image = frame.buffer_data_numpy()
+				try:
+					image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
+				except:
+					pass
 
-	timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+				if filename == None:
+					timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+					filename = str(timestamp) + ".jpg"
 
-	cv2.imwrite(path + str(timestamp) + '.jpg', image)
+				cv2.imwrite(path + filename, image)
 
-# ======================================================= #
-# Acquire a frame from a given camera
-# ======================================================= #
-def acquire_frame(cameraID, path, filename=None):
+			else:
+				self.incompleteFrameErrorMsg()
 
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
+			camera.disarm()
+			camera.close()	
 
-		camera.arm(mode='SingleFrame')
+		if returnFilename == True:
+			return path + filename		
 
-		frame = camera.acquire_frame()
-		image = frame.buffer_data_numpy()
+	def display(self, frame: Frame):
 
-		if filename == None:
-			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
-			filename = path + str(timestamp) + ".jpg"
-		else:
-			filename = path + filename
+		"""
+		Frame handler that displays frames.
 
-		cv2.imwrite(filename, image)
+		"""
 
-		camera.disarm()
-		camera.close()
+		if not frame.data.receiveStatus == -1:
 
-# ======================================================= #
-# Acquire a single frame and return the matrix data
-# ======================================================= #
-def acquire_frame_raw(cameraID):
-
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
-
-		camera.arm(mode='SingleFrame')
-
-		frame = camera.acquire_frame()
-		image = frame.buffer_data_numpy()
-
-		camera.disarm()
-		camera.close()
-
-	return image
-
-# ======================================================= #
-# Acquire a single frame and return the filename
-# ======================================================= #
-def acquire_frame_temp(cameraID, filename):
-
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
-
-		camera.arm(mode='SingleFrame')
-
-		frame = camera.acquire_frame()
-		image = frame.buffer_data_numpy()
-
-		filename = filename + '.jpg'
-
-		cv2.imwrite(filename, image)
-
-		camera.disarm()
-		camera.close()
-
-	return filename
-
-# ======================================================= #
-# Same as above except suited to streaming images
-# ======================================================= #
-
-# ======================================================= #
-# Acquire a stream of images for a given length of time
-	# and export to a path 
-# ======================================================= #
-def acquire_stream(cameraID, time, frame_buffer, path):
-
-	pixelFormatConversions = {
-    		'BayerRG8': cv2.COLOR_BAYER_RG2RGB,
-	}
-
-	def export_stream(frame: Frame) -> None:
-
-		# Ignore incomplete frames
-		if frame.data.receiveStatus == 0:
 			image = frame.buffer_data_numpy()
-		elif frame.data.receiveStatus == -1:
-			return
 
-		# Colour space conversion, perhaps not required
-		try:
-			image = cv2.cvtColor(image, pixelFormatConversions[frame.pixel_format])
-		except:
-		 	pass
+			try:
+				image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
 
-		timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
-		filename = str(timestamp) + ".jpg"
+			except:
+				pass
 
-		cv2.imwrite(path + filename, image)
+			msg = "Capturing from \'{}\'."
+			im_resize = cv2.resize(image, (self.liveViewWidth, self.liveViewHeight))
+			cv2.imshow(msg.format(self.cameraID), im_resize)
+
+			key = cv2.waitKey(1)
+
+		else:
+			self.incompleteFrameErrorMsg()
 
 
-	with Vimba() as vimba:
-		camera = vimba.camera(cameraID)
-		camera.open()
+	def export(self, frame: Frame):
 
-		camera.arm('Continuous', export_stream, frame_buffer_size=frame_buffer)
-		camera.start_frame_acquisition()
+		"""
+		Frame handler that exports frames to a given path.
 
-		sleep(time)
+		"""
 
-		camera.stop_frame_acquisition()
+		if not frame.data.receiveStatus == -1:
 
-		# Required to stop the session crashing
-		sleep(0.01)
+			image = frame.buffer_data_numpy()
 
-		camera.disarm()
-		camera.close()
+			try:
+				image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
+			except:
+			 	pass
+
+			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+			filename = str(timestamp) + ".jpg"
+
+			cv2.imwrite(self.path + filename, image)
+
+		else:
+			self.incompleteFrameErrorMsg()
+
+	def stream(self, time, frame_buffer, callback, path=None):
+
+		"""
+		Stream frames with a given callback (Asynchronous).
+
+		Arguments:
+			- time: Numeric. Time to stream frames.
+			- frame_buffer: Numeric. Size of frame buffer. 
+			- callback: Class object. Callback for handling individual frames.
+			- path: Character string. File path to save frames. Default is path specified for the current instance.
+
+		"""
+
+		if not path == None:
+			self.path = path
+
+		with Vimba() as vimba:
+			camera = vimba.camera(self.cameraID)
+			camera.open()
+
+			camera.arm('Continuous', callback, frame_buffer_size=frame_buffer)
+			camera.start_frame_acquisition()
+
+			sleep(time)
+
+			camera.stop_frame_acquisition()
+
+			# Required to stop the session crashing
+			sleep(0.01)
+
+			camera.disarm()
+			camera.close()
+
+
+# Tests
+cams = getCameraID()
+cam = cams[0]
+cam_1 = createInstance(cam)
+
+# cam_1.setFeatureValue(feature="ExposureTime", value=200, verbose=True)
+cam_1.stream(time=5, frame_buffer=10, callback=cam_1.display)
