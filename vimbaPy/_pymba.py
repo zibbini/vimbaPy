@@ -281,10 +281,10 @@ class createInstance:
 			camera.close()
 
 
-# Tests
-cams = getCameraID()
-cam = cams[0]
-cam_1 = createInstance(cam)
+# # Tests
+# cams = getCameraID()
+# cam = cams[0]
+# cam_1 = createInstance(cam)
 
-# cam_1.setFeatureValue(feature="ExposureTime", value=200, verbose=True)
-cam_1.stream(time=5, frame_buffer=10, callback=cam_1.display)
+# # cam_1.setFeatureValue(feature="ExposureTime", value=200, verbose=True)
+# cam_1.stream(time=5, frame_buffer=10, callback=cam_1.display)
