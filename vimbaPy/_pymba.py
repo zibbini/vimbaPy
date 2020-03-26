@@ -172,7 +172,11 @@ class createInstance:
 
 			frame = camera.acquire_frame()
 					
-			if not frame.data.receiveStatus == -1:
+			if frame.data.receiveStatus == -1:
+
+				self.incompleteFrameErrorMsg()
+
+			else:
 
 				image = frame.buffer_data_numpy()
 
@@ -187,9 +191,6 @@ class createInstance:
 
 				cv2.imwrite(path + filename, image)
 
-			else:
-				self.incompleteFrameErrorMsg()
-
 			camera.disarm()
 			camera.close()	
 
@@ -203,7 +204,11 @@ class createInstance:
 
 		"""
 
-		if not frame.data.receiveStatus == -1:
+		if frame.data.receiveStatus == -1:
+
+			self.incompleteFrameErrorMsg()
+
+		else:
 
 			image = frame.buffer_data_numpy()
 
@@ -219,10 +224,6 @@ class createInstance:
 
 			key = cv2.waitKey(1)
 
-		else:
-			self.incompleteFrameErrorMsg()
-
-
 	def export(self, frame: Frame):
 
 		"""
@@ -230,7 +231,11 @@ class createInstance:
 
 		"""
 
-		if not frame.data.receiveStatus == -1:
+		if frame.data.receiveStatus == -1:
+
+			self.incompleteFrameErrorMsg()
+
+		else:
 
 			image = frame.buffer_data_numpy()
 
@@ -243,9 +248,6 @@ class createInstance:
 			filename = str(timestamp) + ".jpg"
 
 			cv2.imwrite(self.path + filename, image)
-
-		else:
-			self.incompleteFrameErrorMsg()
 
 	def stream(self, time, frame_buffer, callback, path=None):
 
