@@ -65,3 +65,19 @@ sudo pip install pymba
 ```
 
 For installing vimba please see the installation guides for your OS [here](https://www.alliedvision.com/en/products/software.html#c6444).
+
+### Example usage
+
+The majority of the functionality from the main branch has been incorporated here. The only differences are in how a user addresses specific functions.
+
+``` python
+from vimbaPy import _pymba
+
+cams = _pymba.getCameraID()
+cam = cams[0]
+cam = _pymba.createInstance(cam) 
+
+# Display a live view for 5 seconds (first camera)
+cam.stream(time=5, frame_buffer=10, callback=cam.display)
+
+```
