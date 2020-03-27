@@ -193,7 +193,7 @@ class createInstance:
 
 		print("Acquisition at " + str(self.cameraID) + " returned incomplete frame(s).")
 
-	def acquire_frame(self, timeout_ms=2000, path=None, filename=None, returnFilename=False):
+	def acquire_frame(self, features=None, timeout_ms=2000, path=None, filename=None, returnFilename=False):
 
 		"""
 		Acquire a frame and export to a given path.
@@ -265,7 +265,6 @@ class createInstance:
 
 		cam.queue_frame(frame)
 
-
 	def export(self, cam: Camera, frame: Frame):
 
 		"""
@@ -280,7 +279,30 @@ class createInstance:
 			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
 			filename = str(timestamp) + ".jpg"
 
-			cv2.imwrite(self.path + filename, image)
+			cv2.imwrite(os.path.join(self.path + filename), image)
+
+		else:
+			self.incompleteFrameErrorMsg()
+
+		cam.queue_frame(frame)
+
+	def export_withCounter(self, cam: Camera, frame: Frame):
+
+		"""
+		Frame handler that exports frames to a given path with 
+		a counter for numbering frames.
+
+		"""
+
+		if frame.get_status() == FrameStatus.Complete:	
+
+			image = frame.as_numpy_ndarray()
+
+			filename = str(self._counter) + ".jpg"
+
+			cv2.imwrite(os.path.join(self.path + filename), image)
+
+			self._counter += 1
 
 		else:
 			self.incompleteFrameErrorMsg()
@@ -304,6 +326,8 @@ class createInstance:
 		if not path == None:
 			self.path = path
 
+		self._counter = 1
+
 		with Vimba.get_instance() as vimba:
 			with vimba.get_camera_by_id(self.cameraID) as cam:
 
@@ -326,7 +350,11 @@ class createInstance:
 # cam = cams[0]
 # cam_1 = createInstance(cam)
 
-# cam_1.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 0}, verbose=True)
-# cam_1.setSingleFeature(feature="ExposureTime", value=5000, verbose=True)
+# # cam_1.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 0}, verbose=True)
+# # cam_1.setSingleFeature(feature="ExposureTime", value=5000, verbose=True)
 
-# cam_1.stream(time=10, frame_buffer=10, callback=cam_1.display)
+# cam_1.stream(
+# 	time=10, 
+# 	frame_buffer=200, 
+# 	callback=cam_1.export_withCounter, 
+# 	path="/home/z/Documents/testFrames/")
