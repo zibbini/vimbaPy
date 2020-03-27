@@ -133,6 +133,10 @@ class createInstance:
 				feature = camera.feature(feature)
 				feature.value = value
 
+			else:
+				print("Expected value of type Boolean. Available values for 'verbose' are True or False.")
+
+
 			camera.close()
 
 	def setMultiFeature(self, features, verbose=False):
@@ -163,7 +167,7 @@ class createInstance:
 					feat.value = features[feature]
 
 				else:
-					print("Expected value of type Boolean. Available values for verbose are True or False.")
+					print("Expected value of type Boolean. Available values for 'verbose' are True or False.")
 
 			camera.close()
 
