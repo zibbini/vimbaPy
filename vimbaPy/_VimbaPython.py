@@ -1,8 +1,8 @@
-from pymba import Vimba, VimbaException, Frame
-from time import sleep
-import os
-import cv2
+from vimba import *
 import datetime
+from time import sleep
+import cv2
+import os
 
 
 def getCameraID():
@@ -12,8 +12,13 @@ def getCameraID():
 
 	"""
 
-	with Vimba() as vimba:
-			cameras = vimba.camera_ids()
+	with Vimba.get_instance() as vimba:
+		cams = vimba.get_all_cameras()
+
+		cameras = []
+
+		for cam in cams:
+			cameras.append(cam.get_id())
 
 	return cameras
 
@@ -33,7 +38,6 @@ class createInstance:
 	def __init__(self, cameraID, liveViewWidth=520, liveViewHeight=400, path=os.getcwd()):
 
 		self.cameraID = cameraID
-		self.pixelFormatConversions = {'BayerRG8': cv2.COLOR_BAYER_RG2RGB}
 		self.liveViewWidth = liveViewWidth
 		self.liveViewHeight = liveViewHeight
 		self.path = path
@@ -59,17 +63,13 @@ class createInstance:
 
 		"""
 
-		with Vimba() as vimba:
+		with Vimba.get_instance() as vimba:
+			with vimba.get_camera_by_id(self.cameraID) as cam:
 
-			camera = vimba.camera(self.cameraID)
-			camera.open()
+				features = []
 
-			features = []
-
-			for feature_name in camera.feature_names():
-				features.append(feature_name)
-
-			camera.close()
+				for feature in cam.get_all_features():
+					features.append(feature.get_name())
 
 		return features
 
@@ -87,24 +87,15 @@ class createInstance:
 
 		"""
 
-		with Vimba() as vimba:
-			camera = vimba.camera(self.cameraID)
-			camera.open()
+		with Vimba.get_instance() as vimba:
+			with vimba.get_camera_by_id(self.cameraID) as cam:
 
-			feature = camera.feature(feature)
+				feature = cam.get_feature_by_name(feat_name=feature)
 
-			try:
-				value = feature.value
-				range_ = feature.range
-			except VimbaException as e:
-				value = e
-				range_ = None
+				value = str(feature.get())
+				range_ = feature.get_range()
 
-			feature_info = [value, range_]
-
-			camera.close()
-
-		return feature_info
+				return [value, range_]
 
 	def setSingleFeature(self, feature, value, verbose=False):
 
@@ -118,26 +109,24 @@ class createInstance:
 
 		"""
 
-		with Vimba() as vimba:
-			camera = vimba.camera(self.cameraID)
-			camera.open()
+		with Vimba.get_instance() as vimba:
+			with vimba.get_camera_by_id(self.cameraID) as cam:
 
-			feat = camera.feature(feature)
+				feat = cam.get_feature_by_name(feat_name=feature)
 
-			if verbose == True:
-				initial = feat.value
-				feat.value = value
+				if verbose == True:
 
-				print(str(feature) + " is now: " + str(value) + ", was " + str(initial))
+					initial = feat.get()
+					feat.set(value)
 
-			elif verbose == False:
-				feat.value = value
+					print(str(feature) + " is now: " + str(value) + ", was " + str(initial))
 
-			else:
-				print("Expected value of type Boolean. Available values for 'verbose' are True or False.")
+				elif verbose == False:
 
+					feat.set(value)
 
-			camera.close()
+				else:
+					print("Expected value of type Boolean. Available values for 'verbose' are True or False.")
 
 	def setMultiFeature(self, features, verbose=False):
 
@@ -149,27 +138,51 @@ class createInstance:
 			- verbose: Boolean. Whether to print additional information. Default is False.
 
 		"""
+		
+		with Vimba.get_instance() as vimba:
+			with vimba.get_camera_by_id(self.cameraID) as cam:
 
-		with Vimba() as vimba:
-			camera = vimba.camera(self.cameraID)
-			camera.open()
+				for feature in features:
 
-			for feature in features:
-				if verbose == True:
-					feat = camera.feature(feature)
-					initial = feat.value
-					feat.value = features[feature]
+					feat = cam.get_feature_by_name(feat_name=feature)
 
-					print(str(feature) + " is now: " + str(features[feature]) + ", was " + str(initial))
+					if verbose == True:
+						initial = feat.get()
+						feat.set(features[feature])
 
-				elif verbose == False:
-					feat = camera.feature(feature)
-					feat.value = features[feature]
+						print(str(feature) + " is now: " + str(features[feature]) + ", was " + str(initial))
+
+					elif verbose == False:
+						feat.set(features[feature])
+
+					else:
+						print("Expected value of type Boolean. Available values for 'verbose' are True or False.")
+
+	@staticmethod
+	def setup_camera(cam: Camera):
+
+		"""
+		Helper function for setting up a camera for OpenCV
+
+		"""
+
+		with cam:
+			opencv_formats = intersect_pixel_formats(cam.get_pixel_formats(), OPENCV_PIXEL_FORMATS)
+			color_formats = intersect_pixel_formats(opencv_formats, COLOR_PIXEL_FORMATS)
+
+			if color_formats:
+				cam.set_pixel_format(color_formats[0])
+
+			else:
+				mono_formats = intersect_pixel_formats(opencv_formats, MONO_PIXEL_FORMATS)
+
+				if mono_formats:
+					cam.set_pixel_format(mono_formats[0])
 
 				else:
-					print("Expected value of type Boolean. Available values for 'verbose' are True or False.")
+					abort('Camera does not support a OpenCV compatible format natively.')
 
-			camera.close()
+		print("Camera setup for OpenCV complete.")
 
 	def incompleteFrameErrorMsg(self):
 
@@ -180,7 +193,7 @@ class createInstance:
 
 		print("Acquisition at " + str(self.cameraID) + " returned incomplete frame(s).")
 
-	def acquire_frame(self, features=None, path=None, filename=None, returnFilename=False):
+	def acquire_frame(self, timeout_ms=2000, path=None, filename=None, returnFilename=False):
 
 		"""
 		Acquire a frame and export to a given path.
@@ -192,6 +205,7 @@ class createInstance:
 
 		Arguments:
 			- features: Dictionary. Feature names and corresponding values to set them to.
+			- timeout_ms: Numeric. Camera timeout in miliseconds. Default is 2000.
 			- path: Character string. File path to save frames. Default is None.
 			- filename: Character string. Filename to save frame by. Default is the current time if left as None.
 			- returnFilename: Boolean. Whether to return the full file-path to the saved frame. Default is False.
@@ -201,65 +215,44 @@ class createInstance:
 		if path == None:
 			path = self.path
 
-		with Vimba() as vimba:
+		with Vimba.get_instance() as vimba:
+			with vimba.get_camera_by_id(self.cameraID) as cam:
 
-			camera = vimba.camera(self.cameraID)
-			camera.open()
+				if not features == None:
+					for feature in features:
+						feat = cam.get_feature_by_name(feat_name=feature)
+						feat.set(features[feature])
 
-			if not features == None:
-				for feature in features:
-					feat = camera.feature(feature)
-					feat.value = features[feature]
+				self.setup_camera(cam)
 
-			camera.arm(mode="SingleFrame")
+				frame = cam.get_frame(timeout_ms=2000)
 
-			frame = camera.acquire_frame()
-					
-			if frame.data.receiveStatus == -1:
+				if frame.get_status() == FrameStatus.Complete:
 
-				self.incompleteFrameErrorMsg()
+					image = frame.as_numpy_ndarray()
 
-			else:
+					if filename == None:
+						timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+						filename = str(timestamp) + ".jpg"
 
-				image = frame.buffer_data_numpy()
+					cv2.imwrite(path + filename, image)
 
-				try:
-					image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
-				except:
-					pass
-
-				if filename == None:
-					timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
-					filename = str(timestamp) + ".jpg"
-
-				cv2.imwrite(path + filename, image)
-
-			camera.disarm()
-			camera.close()	
+				else:
+					self.incompleteFrameErrorMsg()
 
 		if returnFilename == True:
-			return path + filename		
+			return path + filename
 
-	def display(self, frame: Frame):
+	def display(self, cam: Camera, frame: Frame):
 
 		"""
 		Frame handler that displays frames.
 
 		"""
 
-		if frame.data.receiveStatus == -1:
+		if frame.get_status() == FrameStatus.Complete:
 
-			self.incompleteFrameErrorMsg()
-
-		else:
-
-			image = frame.buffer_data_numpy()
-
-			try:
-				image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
-
-			except:
-				pass
+			image = frame.as_numpy_ndarray()
 
 			msg = "Capturing from \'{}\'."
 			im_resize = cv2.resize(image, (self.liveViewWidth, self.liveViewHeight))
@@ -267,30 +260,32 @@ class createInstance:
 
 			key = cv2.waitKey(1)
 
-	def export(self, frame: Frame):
+		else:
+			self.incompleteFrameErrorMsg()
+
+		cam.queue_frame(frame)
+
+
+	def export(self, cam: Camera, frame: Frame):
 
 		"""
 		Frame handler that exports frames to a given path.
 
 		"""
 
-		if frame.data.receiveStatus == -1:
+		if frame.get_status() == FrameStatus.Complete:	
 
-			self.incompleteFrameErrorMsg()
-
-		else:
-
-			image = frame.buffer_data_numpy()
-
-			try:
-				image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
-			except:
-			 	pass
+			image = frame.as_numpy_ndarray()
 
 			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
 			filename = str(timestamp) + ".jpg"
 
 			cv2.imwrite(self.path + filename, image)
+
+		else:
+			self.incompleteFrameErrorMsg()
+
+		cam.queue_frame(frame)
 
 	def stream(self, time, frame_buffer, callback, features=None, path=None):
 
@@ -309,27 +304,21 @@ class createInstance:
 		if not path == None:
 			self.path = path
 
-		with Vimba() as vimba:
-			camera = vimba.camera(self.cameraID)
-			camera.open()
+		with Vimba.get_instance() as vimba:
+			with vimba.get_camera_by_id(self.cameraID) as cam:
 
-			if not features == None:
-				for feature in features:
-					feat = camera.feature(feature)
-					feat.value = features[feature]
+				if not features == None:
+					for feature in features:
+						feat = cam.get_feature_by_name(feat_name=feature)
+						feat.set(features[feature])
 
-			camera.arm('Continuous', callback, frame_buffer_size=frame_buffer)
-			camera.start_frame_acquisition()
+				self.setup_camera(cam)
 
-			sleep(time)
-
-			camera.stop_frame_acquisition()
-
-			# Required to stop the session crashing
-			sleep(0.01)
-
-			camera.disarm()
-			camera.close()
+				cam.start_streaming(handler=callback, buffer_count=frame_buffer)
+				
+				sleep(time)
+		
+				cam.stop_streaming()
 
 
 # # Tests
@@ -337,8 +326,7 @@ class createInstance:
 # cam = cams[0]
 # cam_1 = createInstance(cam)
 
+# cam_1.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 0}, verbose=True)
 # cam_1.setSingleFeature(feature="ExposureTime", value=5000, verbose=True)
-# cam_1.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 5}, verbose=True)
-# cam_1.stream(time=5, frame_buffer=10, callback=cam_1.display)
 
-
+# cam_1.stream(time=10, frame_buffer=10, callback=cam_1.display)
