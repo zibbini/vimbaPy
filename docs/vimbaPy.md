@@ -126,7 +126,7 @@ cam_P.setMultiFeature(
 
 Note that unless specified, examples will use the camera instances specified at the beginning of this section. In addition, the naming of specific camera instances is only for clarity on which wrapper is being used under the hood. Lastly, methods for either module can be addressed using the same names. 
 
-### getCameraID()
+### getCameraID
 
 Obtain the ID's of all connected Allied Vision cameras. ID's are returned as a list.
 
@@ -147,7 +147,7 @@ cameras_VP = _VimbaPython.getCameraID()
 
 ```
 
-### createInstance()
+### createInstance
 
 Create an independent instance for operating a given camera. 
 
