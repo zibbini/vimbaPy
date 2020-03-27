@@ -5,7 +5,7 @@
 
 ## Example usage
 
-Methods for either module can be addressed using the same names. To start, all usage of `vimbaPy` should begin with the following:
+To start, all usage of `vimbaPy` should begin with the following:
 
 ``` python
 
@@ -124,7 +124,7 @@ cam_P.setMultiFeature(
 
 ## Detailed documentation
 
-Note that unless specified, examples will use the camera instances specified at the beginning of this section. In addition, the naming of specific camera instances is only for clarity on which wrapper is being used under the hood. 
+Note that unless specified, examples will use the camera instances specified at the beginning of this section. In addition, the naming of specific camera instances is only for clarity on which wrapper is being used under the hood. Lastly, methods for either module can be addressed using the same names. 
 
 #### getCameraID()
 
