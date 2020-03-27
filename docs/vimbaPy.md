@@ -72,7 +72,7 @@ cam_P.stream(
 	path="/home/z/Documents/testFrames/")
 
 ```
-For continuous acquisition, there are currently two frame handlers implemented: `display` and `export`. These display frames live or export them to a given path respectively. They can be addressed like so:
+For continuous acquisition, there are currently several frame handlers implemented: `display` and `export` / `export_withCounter`. These display frames live or export them to a given path respectively. They can be addressed like so:
 
 ``` python
 
@@ -343,3 +343,19 @@ cam_VP.stream(
 	path="/home/z/Documents/testFrames/")
 
 ```
+
+### Frame handlers
+
+There are several frame handlers implemented in this package: `display`, `export` and `export_withCounter`. `export_withCounter` merely uses a counter for numbering individual frames. By comparison, `export` uses the current time down to nanoseconds to give unique names for individual frames. All three can be addressed in the same manner:
+
+``` python
+
+cam_P.stream(time=10, frame_buffer=10, callback=cam_P.display)
+
+cam_P.stream(time=10, frame_buffer=10, callback=cam_P.export, path="/home/z/Documents/testFrames/")
+
+cam_P.stream(time=10, frame_buffer=10, callback=cam_P.export_withCounter, path="/home/z/Documents/testFrames/")
+
+```
+
+Note that for high framerate acquisitions, you will need to increase the frame buffer size or incomplete frames will be returned and ignored.
