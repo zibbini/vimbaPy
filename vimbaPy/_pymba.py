@@ -106,7 +106,7 @@ class createInstance:
 
 		return feature_info
 
-	def setFeatureValue(self, feature, value, verbose=False):
+	def setSingleFeature(self, feature, value, verbose=False):
 
 		"""
 		Set the value for a given feature.
@@ -135,6 +135,38 @@ class createInstance:
 
 			camera.close()
 
+	def setMultiFeature(self, features, verbose=False):
+
+		"""
+		Set the value for a given set of features
+
+		Arguments:
+			- features: Dictionary. Feature names and corresponding values to set them to.
+			- verbose: Boolean. Whether to print additional information. Default is False.
+
+		"""
+
+		with Vimba() as vimba:
+			camera = vimba.camera(self.cameraID)
+			camera.open()
+
+			for feature in features:
+				if verbose == True:
+					feat = camera.feature(feature)
+					initial = feat.value
+					feat.value = features[feature]
+
+					print(str(feature) + " is now: " + str(features[feature]) + ", was " + str(initial))
+
+				elif verbose == False:
+					feat = camera.feature(feature)
+					feat.value = features[feature]
+
+				else:
+					print("Expected value of type Boolean. Available values for verbose are True or False.")
+
+			camera.close()
+
 	def incompleteFrameErrorMsg(self):
 
 		"""
@@ -144,7 +176,7 @@ class createInstance:
 
 		print("Acquisition at " + str(self.cameraID) + " returned incomplete frame(s).")
 
-	def acquire_frame(self, path=None, filename=None, returnFilename=False):
+	def acquire_frame(self, features=None, path=None, filename=None, returnFilename=False):
 
 		"""
 		Acquire a frame and export to a given path.
@@ -155,6 +187,7 @@ class createInstance:
 		or set a new path with .setPath().
 
 		Arguments:
+			- features: Dictionary. Feature names and corresponding values to set them to.
 			- path: Character string. File path to save frames. Default is None.
 			- filename: Character string. Filename to save frame by. Default is the current time if left as None.
 			- returnFilename: Boolean. Whether to return the full file-path to the saved frame. Default is False.
@@ -165,8 +198,14 @@ class createInstance:
 			path = self.path
 
 		with Vimba() as vimba:
+
 			camera = vimba.camera(self.cameraID)
 			camera.open()
+
+			if not features == None:
+				for feature in features:
+					feat = camera.feature(feature)
+					feat.value = features[feature]
 
 			camera.arm(mode="SingleFrame")
 
@@ -249,7 +288,7 @@ class createInstance:
 
 			cv2.imwrite(self.path + filename, image)
 
-	def stream(self, time, frame_buffer, callback, path=None):
+	def stream(self, time, frame_buffer, callback, features=None, path=None):
 
 		"""
 		Stream frames with a given callback (Asynchronous).
@@ -258,6 +297,7 @@ class createInstance:
 			- time: Numeric. Time to stream frames.
 			- frame_buffer: Numeric. Size of frame buffer. 
 			- callback: Class object. Callback for handling individual frames.
+			- features: Dictionary. Feature names and corresponding values to set them to.
 			- path: Character string. File path to save frames. Default is path specified for the current instance.
 
 		"""
@@ -268,6 +308,11 @@ class createInstance:
 		with Vimba() as vimba:
 			camera = vimba.camera(self.cameraID)
 			camera.open()
+
+			if not features == None:
+				for feature in features:
+					feat = camera.feature(feature)
+					feat.value = features[feature]
 
 			camera.arm('Continuous', callback, frame_buffer_size=frame_buffer)
 			camera.start_frame_acquisition()
@@ -288,5 +333,7 @@ class createInstance:
 # cam = cams[0]
 # cam_1 = createInstance(cam)
 
-# # cam_1.setFeatureValue(feature="ExposureTime", value=200, verbose=True)
+# cam_1.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 5}, verbose=True)
 # cam_1.stream(time=5, frame_buffer=10, callback=cam_1.display)
+
+

@@ -1,9 +1,9 @@
 from setuptools import setup
-from vimbaPy import __version__
+# from vimbaPy import __version__
 
 
 setup(name='vimbaPy',
-      version=__version__,
+      version=0.2,
       description="vimbaPy is a package containing helper/convenience functions for pymba and VimbaPython.",
       keywords='python, python3, opencv, machine vision, computer vision, vimba, allied vision',
       author='zibbini',
