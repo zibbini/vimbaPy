@@ -126,7 +126,7 @@ cam_P.setMultiFeature(
 
 Note that unless specified, examples will use the camera instances specified at the beginning of this section. In addition, the naming of specific camera instances is only for clarity on which wrapper is being used under the hood. Lastly, methods for either module can be addressed using the same names. 
 
-#### getCameraID()
+### getCameraID()
 
 Obtain the ID's of all connected Allied Vision cameras. ID's are returned as a list.
 
@@ -139,13 +139,15 @@ NA
 ``` python
 from vimbaPy import _pymba, VimbaPython
 
+# For pymba
 cameras_P = _pymba.getCameraID()
 
+# For VimbaPython
 cameras_VP = _VimbaPython.getCameraID()
 
 ```
 
-#### createInstance()
+### createInstance()
 
 Create an independent instance for operating a given camera. 
 
@@ -171,7 +173,7 @@ cam_VP = _VimbaPython.createInstance(cameras_VP[0])
 
 ```
 
-#### setPath
+### setPath
 
 Set a new path for saving frames.
 
@@ -192,7 +194,7 @@ cam_VP.setPath(path="/home/z/Desktop/")
 
 ```
 
-#### listFeatures
+### listFeatures
 
 List all features for the given camera. Note that not all features will be adjustable.
 
@@ -212,7 +214,7 @@ cam_VP.listFeatures()
 
 ```
 
-#### getFeatureInfo
+### getFeatureInfo
 
 Retrieve some basic feature information for a given feature. Values are returned as a nested list, with the first slot being the current value, and the second being the range. Min and max are the first and second slots respectively for the latter.
 
@@ -232,7 +234,7 @@ cam_VP.getFeatureInfo(feature="ExposureTime")
 
 ```
 
-#### setSingleFeature
+### setSingleFeature
 
 Set the value for a given feature.
 
@@ -254,7 +256,7 @@ cam_VP.setSingleFeature(feature="ExposureTime", value=5000, verbose=True)
 
 ```
 
-#### setMultiFeature
+### setMultiFeature
 
 Set the value for a given set of features.
 
@@ -275,7 +277,7 @@ cam_VP.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 0}, verbose
 
 ```
 
-#### acquire_frame
+### acquire_frame
 
 Acquire a frame and export to a given path. The path argument is optional for users who would like to export to a specific path. If left empty, the frame will be exported to the path specified in the given instance. This will be the current working directory if you did not specify a path when creating the instance or set a new path with `setPath()`.
 
@@ -308,7 +310,7 @@ cam_VP.acquire_frame(
 
 ```
 
-#### stream
+### stream
 
 Stream frames with a given callback (Asynchronous).
 
