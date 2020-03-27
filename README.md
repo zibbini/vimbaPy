@@ -1,6 +1,6 @@
 # vimbaPy
 
-This is the development branch for code that may make it into a future release. Note that there is currently only support for `pymba`, support for `VimbaPython` will be added in due course. Documentation can found with their respective methods in the source code. 
+This is the development branch for code that may make it into a future release. Note that there is currently only support for `pymba`, support for `VimbaPython` will be added in due course. Documentation can found alongside methods in the source code. 
 
 The majority of the functionality from the main branch has been incorporated here. The only differences are in how a user addresses specific functions:
 
