@@ -1,10 +1,6 @@
 # vimbaPy
 
-`vimbaPy` is a python package containing helper/convenience functions for interfacing with the two main python wrappers for the Vimba C API: `pymba` and `VimbaPython`. Differences in the implementations of either wrapper can mean that functions written in one may work better for your particular workflow, and so a combination of both wrappers may provide the most complete solution. As such, both have been included here to allow users to easily experiment with either wrapper through a simple declarative interface.
-
-So far only USB cameras have been tested (specifically: monochrome Alvium 1800 u-500m), however all functions described in this package do not address a specific camera type so in theory should work with GigE cameras. Documentation for each sub-package can be found in the [`/docs`](https://github.com/EmbryoPhenomics/vimbaPy/tree/master/docs) folder. Example use cases of the package itself can be found below.
-
-The majority of the functionality from the previous release has been incorporated here. The only differences are in how a user addresses specific functions:
+`vimbaPy` is a set of python classes for interfacing with the two main python wrappers for the Vimba C API: `pymba` and `VimbaPython`. Differences in the implementations of either wrapper can mean that functions written in one may work better for your particular workflow, and so a combination of both wrappers may provide the most complete solution. As such, both have been included here to allow users to easily experiment with either wrapper through a simple declarative interface:
 
 ``` python
 from vimbaPy import _pymba
@@ -16,6 +12,8 @@ cam = _pymba.createInstance(cams[0])
 cam.stream(time=5, frame_buffer=10, callback=cam.display)
 
 ```
+
+So far only USB cameras have been tested (specifically: monochrome Alvium 1800 u-500m), however all methods described in this package do not address a specific camera type so in theory should work with GigE cameras. Documentation can be found in the [`/docs`](https://github.com/EmbryoPhenomics/vimbaPy/tree/master/docs) folder. 
 
 ### Important note
 
