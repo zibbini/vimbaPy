@@ -338,7 +338,7 @@ cam_P.stream(
 cam_VP.stream(
 	time=10,
 	frame_buffer=10,
-	callback=cam_P.export,
+	callback=cam_VP.export,
 	features={"ExposureAuto": "Off", "ExposureTime": 5000, "BlackLevel": 0, "Gain": 0},
 	path="/home/z/Documents/testFrames/")
 
