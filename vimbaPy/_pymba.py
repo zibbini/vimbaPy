@@ -290,7 +290,33 @@ class createInstance:
 			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
 			filename = str(timestamp) + ".jpg"
 
-			cv2.imwrite(self.path + filename, image)
+			cv2.imwrite(os.path.join(self.path + filename), image)
+
+	def export_withCounter(self, frame: Frame):
+
+		"""
+		Frame handler that exports frames to a given path.
+
+		"""
+
+		if frame.data.receiveStatus == -1:
+
+			self.incompleteFrameErrorMsg()
+
+		else:
+
+			image = frame.buffer_data_numpy()
+
+			try:
+				image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
+			except:
+			 	pass
+
+			filename = str(self._counter) + ".jpg"
+
+			cv2.imwrite(os.path.join(self.path + filename), image)
+
+			self._counter += 1
 
 	def stream(self, time, frame_buffer, callback, features=None, path=None):
 
@@ -308,6 +334,8 @@ class createInstance:
 
 		if not path == None:
 			self.path = path
+
+		self._counter = 1
 
 		with Vimba() as vimba:
 			camera = vimba.camera(self.cameraID)
@@ -337,8 +365,12 @@ class createInstance:
 # cam = cams[0]
 # cam_1 = createInstance(cam)
 
-# cam_1.setSingleFeature(feature="ExposureTime", value=5000, verbose=True)
-# cam_1.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 5}, verbose=True)
-# cam_1.stream(time=5, frame_buffer=10, callback=cam_1.display)
+# # print(cam_1.getFeatureInfo(feature="ExposureTime"))
+
+# cam_1.stream(
+# 	time=10, 
+# 	frame_buffer=100, 
+# 	callback=cam_1.export_withCounter,
+# 	path="/home/z/Documents/testFrames/")
 
 
