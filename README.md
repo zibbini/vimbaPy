@@ -87,7 +87,7 @@ sudo pip install pymba
 
 ```
 
-**VimbaPython**
+**VimbaPython:**
 
 You can use the following to clone and install `VimbaPython`:
 
