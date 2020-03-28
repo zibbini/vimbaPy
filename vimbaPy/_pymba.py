@@ -446,6 +446,9 @@ class createInstance:
 			camera.disarm()
 			camera.close()
 
+		self._frame_limit = None
+
+
 
 
 # # Tests
@@ -455,12 +458,18 @@ class createInstance:
 
 # # print(cam_1.getFeatureInfo(feature="ExposureTime"))
 
-# cam_1.stream(
-# 	time=None,
-# 	callback=cam_1.export_withCounter,
-# 	frame_buffer=100,
-# 	frame_limit=100,
-# 	path="/home/z/Documents/testFrames/")
+# for i in range(1, 5, 1):	
+
+# 	print("Stream: " + str(i))
+
+# 	cam_1.stream(
+# 		time=None,
+# 		callback=cam_1.export,
+# 		frame_buffer=100,
+# 		frame_limit=50,
+# 		path="/home/z/Documents/testFrames/")
+
+# 	sleep(5)
 
 
 
