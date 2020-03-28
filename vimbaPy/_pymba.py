@@ -3,6 +3,7 @@ from time import sleep
 import os
 import cv2
 import datetime
+import threading
 
 
 def getCameraID():
@@ -274,23 +275,55 @@ class createInstance:
 
 		"""
 
-		if frame.data.receiveStatus == -1:
+		if self._frame_limit == None:			
 
-			self.incompleteFrameErrorMsg()
+			if frame.data.receiveStatus == -1:
+
+				self.incompleteFrameErrorMsg()
+
+			else:
+
+				image = frame.buffer_data_numpy()
+
+				try:
+					image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
+				except:
+				 	pass
+
+				timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+				filename = str(timestamp) + ".jpg"
+
+				cv2.imwrite(os.path.join(self.path + filename), image)
 
 		else:
 
-			image = frame.buffer_data_numpy()
+			if self._counter <= self._frame_limit:
 
-			try:
-				image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
-			except:
-			 	pass
+				if frame.data.receiveStatus == -1:
 
-			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
-			filename = str(timestamp) + ".jpg"
+					self.incompleteFrameErrorMsg()
 
-			cv2.imwrite(os.path.join(self.path + filename), image)
+				else:
+
+					image = frame.buffer_data_numpy()
+
+					try:
+						image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
+					except:
+					 	pass
+
+					timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+					filename = str(timestamp) + ".jpg"
+
+					cv2.imwrite(os.path.join(self.path + filename), image)
+
+				self._counter += 1
+
+			elif self._counter > self._frame_limit:
+
+				self.shutdown_event.set()
+
+				return
 
 	def export_withCounter(self, frame: Frame):
 
@@ -299,34 +332,66 @@ class createInstance:
 
 		"""
 
-		if frame.data.receiveStatus == -1:
+		if self._frame_limit == None:
 
-			self.incompleteFrameErrorMsg()
+			if frame.data.receiveStatus == -1:
+
+				self.incompleteFrameErrorMsg()
+
+			else:
+
+				image = frame.buffer_data_numpy()
+
+				try:
+					image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
+				except:
+				 	pass
+
+				filename = str(self._counter) + ".jpg"
+
+				cv2.imwrite(os.path.join(self.path + filename), image)
+
+				self._counter += 1
 
 		else:
 
-			image = frame.buffer_data_numpy()
+			if self._counter <= self._frame_limit: 
 
-			try:
-				image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
-			except:
-			 	pass
+				if frame.data.receiveStatus == -1:
 
-			filename = str(self._counter) + ".jpg"
+					self.incompleteFrameErrorMsg()
 
-			cv2.imwrite(os.path.join(self.path + filename), image)
+				else:
 
-			self._counter += 1
+					image = frame.buffer_data_numpy()
 
-	def stream(self, time, frame_buffer, callback, features=None, path=None):
+					try:
+						image = cv2.cvtColor(image, self.pixelFormatConversions[frame.pixel_format])
+					except:
+					 	pass
+
+					filename = str(self._counter) + ".jpg"
+
+					cv2.imwrite(os.path.join(self.path + filename), image)
+
+					self._counter += 1
+
+			elif self._counter > self._frame_limit:
+
+				self.shutdown_event.set()
+
+				return
+
+	def stream(self, time, callback, frame_buffer, frame_limit=None, features=None, path=None):
 
 		"""
 		Stream frames with a given callback (Asynchronous).
 
 		Arguments:
 			- time: Numeric. Time to stream frames.
-			- frame_buffer: Numeric. Size of frame buffer. 
 			- callback: Class object. Callback for handling individual frames.
+			- frame_buffer: Numeric. Size of frame buffer. 
+			- frame_limit: Numeric. Number frames to acquire, only available with export_withCounter. Default is None.
 			- features: Dictionary. Feature names and corresponding values to set them to.
 			- path: Character string. File path to save frames. Default is path specified for the current instance.
 
@@ -336,6 +401,7 @@ class createInstance:
 			self.path = path
 
 		self._counter = 1
+		self._frame_limit = None
 
 		with Vimba() as vimba:
 			camera = vimba.camera(self.cameraID)
@@ -347,17 +413,39 @@ class createInstance:
 					feat.value = features[feature]
 
 			camera.arm('Continuous', callback, frame_buffer_size=frame_buffer)
-			camera.start_frame_acquisition()
 
-			sleep(time)
+			if time == None and frame_limit != None:
 
-			camera.stop_frame_acquisition()
+				if self.display == callback:
+					raise ValueError("Cannot use the 'display' callback with a frame limit.")					
+
+				self._frame_limit = frame_limit
+				self.shutdown_event = threading.Event()
+
+				try:
+					camera.start_frame_acquisition()
+					self.shutdown_event.wait()
+
+				finally:
+					camera.stop_frame_acquisition()
+
+			elif time != None and frame_limit == None:
+
+				camera.start_frame_acquisition()
+
+				sleep(time)
+
+				camera.stop_frame_acquisition()
+
+			else:
+				raise ValueError("Must specify either time or frame_limit, with the other = None. Cannot specify both at once.")
 
 			# Required to stop the session crashing
-			sleep(0.01)
+			sleep(0.02)
 
 			camera.disarm()
 			camera.close()
+
 
 
 # # Tests
@@ -368,9 +456,11 @@ class createInstance:
 # # print(cam_1.getFeatureInfo(feature="ExposureTime"))
 
 # cam_1.stream(
-# 	time=10, 
-# 	frame_buffer=100, 
+# 	time=None,
 # 	callback=cam_1.export_withCounter,
+# 	frame_buffer=100,
+# 	frame_limit=100,
 # 	path="/home/z/Documents/testFrames/")
+
 
 
