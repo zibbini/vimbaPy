@@ -69,7 +69,9 @@ Doing a normal pip installation may not work and so you may need to install `vim
 
 ### Installing pymba and VimbaPython
 
-Please see the installation guide for installing VimbaPython [here](https://github.com/alliedvision/VimbaPython). You can install `pymba` using pip:
+**pymba:**
+
+You can install `pymba` using pip:
 
 ``` shell
 
@@ -85,4 +87,18 @@ sudo pip install pymba
 
 ```
 
+**VimbaPython:**
+
+You can use the following to clone and install `VimbaPython`:
+
+``` python
+
+# Clone into a suitable directory:
+git clone https://github.com/alliedvision/VimbaPython.git
+cd VimbaPython
+
+pip uninstall VimbaPython # Uninstall any existing installation
+pip install .
+
+```
 For installing vimba please see the installation guides for your OS [here](https://www.alliedvision.com/en/products/software.html#c6444).
