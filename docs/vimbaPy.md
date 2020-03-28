@@ -7,17 +7,24 @@
 
 To start, all usage of `vimbaPy` should begin with the following:
 
+*For pymba:*
+
 ``` python
 
-from vimbaPy import _pymba, _VimbaPython
+from vimbaPy import _pymba
 
-# For pymba:
 cameras = _pymba.getCameraID() # Retrieve the ID's of all connected cameras.
 cam = cameras[0] # Select the first camera
 
 cam_P = _pymba.createInstance(cam) # Create an independent instance of vimbaPy using pymba
 
-# For VimbaPython
+```
+
+*For VimbaPython:*
+
+``` python
+from vimbaPy import _VimbaPython
+
 cameras = _VimbaPython.getCameraID() 
 cam = cameras[0]
 
@@ -52,7 +59,7 @@ cam_P.stream(time=10, frame_buffer=10, callback=cam_P.export)
 
 ```
 
-Note that we can specify different arguments at whichever stage we choose, so if we wanted to enclose all the arguments in one method call for better code readability we can:
+Note that we can specify different arguments at whichever stage we choose, so if we wanted to enclose all the arguments in one method call we can:
 
 ``` python
 
