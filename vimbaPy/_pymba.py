@@ -441,7 +441,7 @@ class createInstance:
 				raise ValueError("Must specify either time or frame_limit, with the other = None. Cannot specify both at once.")
 
 			# Required to stop the session crashing
-			sleep(0.02)
+			sleep(2)
 
 			camera.disarm()
 			camera.close()
