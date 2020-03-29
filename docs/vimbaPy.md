@@ -129,7 +129,7 @@ cam_P.setMultiFeature(
 
 ```
 
-## Detailed documentation
+## More detailed documentation
 
 Note that unless specified, examples will use the camera instances specified at the beginning of this section. In addition, the naming of specific camera instances is only for clarity on which wrapper is being used under the hood. Lastly, methods for either module can be addressed using the same names. 
 
@@ -324,8 +324,9 @@ Stream frames with a given callback (Asynchronous).
 **Arguments:**
 
 * time: Numeric. Time to stream frames.
-* frame_buffer: Numeric. Size of frame buffer. 
 * callback: Class object. Callback for handling individual frames.
+* frame_buffer: Numeric. Size of frame buffer. 
+* frame_limit: Numeric. Number of frames to acquire, only available with `export` and `export_withCounter` frame handlers. Default is None.
 * features: Dictionary. Feature names and corresponding values to set them to.
 * path: Character string. File path to save frames. Default is path specified for the current instance.
 
@@ -357,12 +358,42 @@ There are several frame handlers implemented in this package: `display`, `export
 
 ``` python
 
-cam_P.stream(time=10, frame_buffer=10, callback=cam_P.display)
+cam_P.stream(
+	time=10, 
+	frame_buffer=10, 
+	callback=cam_P.display)
 
-cam_P.stream(time=10, frame_buffer=10, callback=cam_P.export, path="/home/z/Documents/testFrames/")
+cam_P.stream(
+	time=10, 
+	frame_buffer=10, 
+	callback=cam_P.export, 
+	path="/home/z/Documents/testFrames/")
 
-cam_P.stream(time=10, frame_buffer=10, callback=cam_P.export_withCounter, path="/home/z/Documents/testFrames/")
+cam_P.stream(
+	time=10, 
+	frame_buffer=10, 
+	callback=cam_P.export_withCounter, 
+	path="/home/z/Documents/testFrames/")
 
 ```
 
-Note that for high framerate acquisitions, you will need to increase the frame buffer size or incomplete frames will be returned and ignored.
+To acquire a set number of frames, you can use the acquisition frame handlers like so:
+
+``` python
+
+cam_P.stream(
+	time=None, 
+	frame_buffer=10, 
+	callback=cam_P.export, 
+	frame_limit=100, 
+	path="/home/z/Documents/testFrames/")
+
+cam_P.stream(
+	time=None, 
+	frame_buffer=10, 
+	callback=cam_P.export_withCounter, 
+	path="/home/z/Documents/testFrames/")
+
+```
+
+Note that you can only specify either time or a frame limit for a given acquisition, not both. In addition, the `display` frame handler will not accept a frame limit. Lastly, for high framerate acquisitions, you will need to increase the frame buffer size or incomplete frames may be returned and ignored.

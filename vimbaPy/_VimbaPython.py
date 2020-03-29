@@ -1,8 +1,9 @@
 from vimba import *
-import datetime
 from time import sleep
 import cv2
 import os
+import threading
+import datetime
 
 
 def getCameraID():
@@ -182,8 +183,6 @@ class createInstance:
 				else:
 					abort('Camera does not support a OpenCV compatible format natively.')
 
-		print("Camera setup for OpenCV complete.")
-
 	def incompleteFrameErrorMsg(self):
 
 		"""
@@ -272,19 +271,47 @@ class createInstance:
 
 		"""
 
-		if frame.get_status() == FrameStatus.Complete:	
+		if self._frame_limit == None:	
 
-			image = frame.as_numpy_ndarray()
+			if frame.get_status() == FrameStatus.Complete:	
 
-			timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
-			filename = str(timestamp) + ".jpg"
+				image = frame.as_numpy_ndarray()
 
-			cv2.imwrite(os.path.join(self.path + filename), image)
+				timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+				filename = str(timestamp) + ".jpg"
+
+				cv2.imwrite(os.path.join(self.path + filename), image)
+
+			else:
+				self.incompleteFrameErrorMsg()
+
+			cam.queue_frame(frame)
 
 		else:
-			self.incompleteFrameErrorMsg()
 
-		cam.queue_frame(frame)
+			if self._counter <= self._frame_limit:
+
+				if frame.get_status() == FrameStatus.Complete:	
+
+					image = frame.as_numpy_ndarray()
+
+					timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss%fµs')
+					filename = str(timestamp) + ".jpg"
+
+					cv2.imwrite(os.path.join(self.path + filename), image)
+
+					self._counter += 1
+
+				else:
+					self.incompleteFrameErrorMsg()
+
+				cam.queue_frame(frame)
+
+			elif self._counter > self._frame_limit:
+
+				self.shutdown_event.set()
+
+				return
 
 	def export_withCounter(self, cam: Camera, frame: Frame):
 
@@ -294,30 +321,54 @@ class createInstance:
 
 		"""
 
-		if frame.get_status() == FrameStatus.Complete:	
+		if self._frame_limit == None:
 
-			image = frame.as_numpy_ndarray()
+			if frame.get_status() == FrameStatus.Complete:	
 
-			filename = str(self._counter) + ".jpg"
+				image = frame.as_numpy_ndarray()
+				filename = str(self._counter) + ".jpg"
+				cv2.imwrite(os.path.join(self.path + filename), image)
 
-			cv2.imwrite(os.path.join(self.path + filename), image)
+				self._counter += 1
 
-			self._counter += 1
+			else:
+				self.incompleteFrameErrorMsg()
+
+			cam.queue_frame(frame)
 
 		else:
-			self.incompleteFrameErrorMsg()
 
-		cam.queue_frame(frame)
+			if self._counter <= self._frame_limit:
 
-	def stream(self, time, frame_buffer, callback, features=None, path=None):
+				if frame.get_status() == FrameStatus.Complete:	
+
+					image = frame.as_numpy_ndarray()
+					filename = str(self._counter) + ".jpg"
+					cv2.imwrite(os.path.join(self.path + filename), image)
+
+					self._counter += 1
+
+				else:
+					self.incompleteFrameErrorMsg()
+
+				cam.queue_frame(frame)
+
+			elif self._counter > self._frame_limit:
+
+				self.shutdown_event.set()
+
+				return
+
+	def stream(self, time, callback, frame_buffer, frame_limit=None, features=None, path=None):
 
 		"""
 		Stream frames with a given callback (Asynchronous).
 
 		Arguments:
 			- time: Numeric. Time to stream frames.
-			- frame_buffer: Numeric. Size of frame buffer. 
 			- callback: Class object. Callback for handling individual frames.
+			- frame_buffer: Numeric. Size of frame buffer. 
+			- frame_limit: Numeric. Number frames to acquire, only available with export_withCounter. Default is None.
 			- features: Dictionary. Feature names and corresponding values to set them to.
 			- path: Character string. File path to save frames. Default is path specified for the current instance.
 
@@ -325,6 +376,13 @@ class createInstance:
 
 		if not path == None:
 			self.path = path
+
+		if time != None and frame_limit == None:
+			self._frame_limit = None
+		elif time == None and frame_limit != None:
+			self._frame_limit = frame_limit
+		else:
+			raise ValueError("Must specify either time or frame_limit, with the other = None. Cannot specify both at once.")
 
 		self._counter = 1
 
@@ -338,11 +396,29 @@ class createInstance:
 
 				self.setup_camera(cam)
 
-				cam.start_streaming(handler=callback, buffer_count=frame_buffer)
-				
-				sleep(time)
-		
-				cam.stop_streaming()
+				if self._frame_limit == None:					
+
+					cam.start_streaming(handler=callback, buffer_count=frame_buffer)
+					
+					sleep(time)
+			
+					cam.stop_streaming()
+
+				else:
+
+					if self.display == callback:
+						raise ValueError("Cannot use the 'display' callback with a frame limit.")					
+
+					self._frame_limit = frame_limit
+					self.shutdown_event = threading.Event()
+
+					try:
+						cam.start_streaming(handler=callback, buffer_count=frame_buffer)
+						self.shutdown_event.wait()
+
+					finally:
+						cam.stop_streaming()
+
 
 
 # # Tests
@@ -350,11 +426,29 @@ class createInstance:
 # cam = cams[0]
 # cam_1 = createInstance(cam)
 
-# # cam_1.setMultiFeature(features={"ExposureTime": 5000, "BlackLevel": 0}, verbose=True)
-# # cam_1.setSingleFeature(feature="ExposureTime", value=5000, verbose=True)
+# cam_1.stream(
+# 	time=5,
+# 	frame_buffer=100,
+# 	callback=cam_1.display)
+
+# for i in range(1, 5, 1):	
+
+# 	print("Stream: " + str(i))
+
+# 	cam_1.stream(
+# 		time=None,
+# 		callback=cam_1.export,
+# 		frame_buffer=100,
+# 		frame_limit=400,
+# 		features={"Width": 800, "Height": 480},
+# 		path="/home/z/Documents/testFrames/")
+
+# 	sleep(2)
 
 # cam_1.stream(
-# 	time=10, 
-# 	frame_buffer=200, 
-# 	callback=cam_1.export_withCounter, 
+# 	time=None,
+# 	callback=cam_1.export_withCounter,
+# 	frame_buffer=200,
+# 	frame_limit=50,
+# 	features={"Width": 800, "Height": 480},
 # 	path="/home/z/Documents/testFrames/")
