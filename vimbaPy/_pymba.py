@@ -400,8 +400,14 @@ class createInstance:
 		if not path == None:
 			self.path = path
 
+		if time != None and frame_limit == None:
+			self._frame_limit = None
+		elif time == None and frame_limit != None:
+			self._frame_limit = frame_limit
+		else:
+			raise ValueError("Must specify either time or frame_limit, with the other = None. Cannot specify both at once.")
+
 		self._counter = 1
-		self._frame_limit = None
 
 		with Vimba() as vimba:
 			camera = vimba.camera(self.cameraID)
@@ -414,8 +420,16 @@ class createInstance:
 
 			camera.arm('Continuous', callback, frame_buffer_size=frame_buffer)
 
-			if time == None and frame_limit != None:
+			if self._frame_limit == None:
 
+				camera.start_frame_acquisition()
+
+				sleep(time)
+
+				camera.stop_frame_acquisition()
+
+			else:
+				
 				if self.display == callback:
 					raise ValueError("Cannot use the 'display' callback with a frame limit.")					
 
@@ -429,24 +443,11 @@ class createInstance:
 				finally:
 					camera.stop_frame_acquisition()
 
-			elif time != None and frame_limit == None:
-
-				camera.start_frame_acquisition()
-
-				sleep(time)
-
-				camera.stop_frame_acquisition()
-
-			else:
-				raise ValueError("Must specify either time or frame_limit, with the other = None. Cannot specify both at once.")
-
 			# Required to stop the session crashing
-			sleep(2)
+			sleep(0.01)
 
 			camera.disarm()
 			camera.close()
-
-		self._frame_limit = None
 
 
 
@@ -456,7 +457,12 @@ class createInstance:
 # cam = cams[0]
 # cam_1 = createInstance(cam)
 
-# # print(cam_1.getFeatureInfo(feature="ExposureTime"))
+# print(cam_1.getFeatureInfo(feature="ExposureTime"))
+
+# cam_1.stream(
+# 	time=5,
+# 	frame_buffer=100,
+# 	callback=cam_1.display)
 
 # for i in range(1, 5, 1):	
 
@@ -466,10 +472,9 @@ class createInstance:
 # 		time=None,
 # 		callback=cam_1.export,
 # 		frame_buffer=100,
-# 		frame_limit=50,
+# 		frame_limit=400,
+# 		features={"Width": 800, "Height": 480},
 # 		path="/home/z/Documents/testFrames/")
 
-# 	sleep(5)
-
-
+# 	sleep(1)
 
