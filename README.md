@@ -1,4 +1,4 @@
-# vimbaPy
+# vimbaPy (pymba only copy)
 
 `vimbaPy` is a set of python classes for interfacing with the two main python wrappers for the Vimba C API: `pymba` and `VimbaPython`. Differences in the implementations of either wrapper can mean that functions written in one may work better for your particular workflow, and so a combination of both wrappers may provide the most complete solution. As such, both have been included here to allow users to easily experiment with either wrapper through a simple declarative interface:
 
