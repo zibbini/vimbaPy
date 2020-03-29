@@ -368,7 +368,7 @@ class createInstance:
 			- time: Numeric. Time to stream frames.
 			- callback: Class object. Callback for handling individual frames.
 			- frame_buffer: Numeric. Size of frame buffer. 
-			- frame_limit: Numeric. Number frames to acquire, only available with export_withCounter. Default is None.
+			- frame_limit: Numeric. Number frames to acquire. Default is None.
 			- features: Dictionary. Feature names and corresponding values to set them to.
 			- path: Character string. File path to save frames. Default is path specified for the current instance.
 
