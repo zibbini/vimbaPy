@@ -317,7 +317,7 @@ class createInstance:
 
 					cv2.imwrite(os.path.join(self.path + filename), image)
 
-				self._counter += 1
+					self._counter += 1
 
 			elif self._counter > self._frame_limit:
 
