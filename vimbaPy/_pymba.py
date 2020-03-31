@@ -299,7 +299,7 @@ class createInstance:
 
 		else: 
 
-			if self_counter <= self._frame_limit:
+			if self._counter <= self._frame_limit:
 
 				if frame.data.receiveStatus == -1:
 
